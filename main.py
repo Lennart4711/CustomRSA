@@ -1,5 +1,7 @@
 import random
-from prime import is_prime
+from prime import getPrime
+import cProfile
+import time
 
 # Custom Modular Exponantiation, euqivalent to pow(b,e,m)
 def modular_pow(base, exponent, modulus):
@@ -12,13 +14,15 @@ def modular_pow(base, exponent, modulus):
     return c
 
 def encrypt(num, enc_key):
-    return modular_pow(num, enc_key[0], enc_key[1])
+    return pow(num, enc_key[0], enc_key[1])
+    #return modular_pow(num, enc_key[0], enc_key[1])
 
 def decrypt(num, dec_key):
-    return modular_pow(num, dec_key[0], dec_key[1])
+    return pow(num, dec_key[0], dec_key[1])
+    #return modular_pow(num, dec_key[0], dec_key[1])
 
-# Naiv method
-def mod_inverse(a, m):
+# Naive method
+def mod_inverse_naive(a, m):
     for x in range(1, m):
         if (((a%m) * (x%m)) % m == 1):
             return x
@@ -50,39 +54,50 @@ def mod_inverse_euclid(a, m):
 
     return x
 
-# Generate p,q as two random primes
-primes = [i for i in range(1000,9999) if is_prime(i)]
-p,q= random.sample(primes, 2)
-#p,q = 6719, 4729
-print(f"p: {p}, q: {q}")
+def mod_inverse(a,m):
+    return pow(a,-1,m)
+
+# -----Generate keys---------
+key_length = 1024
+# 1. Generate 2 random prime numbers, n bit length
+p = getPrime(key_length/2)
+q = getPrime(key_length/2)
+
+# 2. Calculate the product of p and q
 n = p*q
-print("n:",n)
+
+# 3. Amount of coprimes with n
 phi_n = (p-1)*(q-1)
-print("phi_n:",phi_n)
 
-# e = None
-# for i in range(max(p,q)+1, max(p, q)*100):
-#     if is_prime(i):
-#         e = i
-#         break
-# if e is None:
-#     raise "No encryption key found"
+# 4. e: {1<e<phi_n
+#       coprime with n,phi_n
 e = 65537
-
+# 5. d: de(mod phi_n) = 1
 d = mod_inverse_euclid(e, phi_n)
 
+# 6. Put together the keys
 enc_key = (e,n)
 dec_key = (d,n)
-print("enc_key:",enc_key)
-print("dec_key:", dec_key)
 
 
-clear_text = 1234568
+#------ Example --------
+# 1. A clear text represented as a number
+clear_text = 110100001100101011011000110110001101111001000000111011101101111011100100110110001100100
+
+# 2. Encrypt using the public key
+chiffre = encrypt(clear_text, enc_key)
+
+# 3. Decrypt using the private key
+original = decrypt(chiffre, dec_key)
+
+
+
+
+print(f"p: {p}, q: {q}")
+print("n:",n)   
+print("phi_n:",phi_n)
+print("enc_key =",enc_key)
+print("dec_key =", dec_key)
 print(clear_text)
-
-chiffrat = encrypt(clear_text, enc_key)
-print(chiffrat)
-
-out = decrypt(chiffrat, dec_key)
-print(out)
-
+print(chiffre)
+print(original)
