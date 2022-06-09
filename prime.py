@@ -25,7 +25,7 @@ def is_prime_deterministic(n):
   return True  
 
 
-def isMillerRabinPassed(miller_rabin_candidate, iterations=20):   
+def isMillerRabinPassed(miller_rabin_candidate, iterations=10):   
     maxDivisionsByTwo = 0
     evenComponent = miller_rabin_candidate-1
    
@@ -67,7 +67,6 @@ def getLowLevelPrime(n):
         else: return pc
 
 def getPrime(n):
-  start = time.time()
   while True:
     #x = nBitRandom(n)
     x = getLowLevelPrime(n)
