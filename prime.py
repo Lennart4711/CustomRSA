@@ -33,52 +33,53 @@ def is_prime_deterministic(n: int) -> bool:
 
 
 def miller_rabin_passed(miller_rabin_candidate: int, iterations: int = 10) -> bool:
-  """Probabilistic test if n is prime, error rate: 4**(-iterations)"""
-  max_division_by_two = 0
-  even_component = miller_rabin_candidate - 1
+    """Probabilistic test if n is prime, error rate: 4**(-iterations)"""
+    max_division_by_two = 0
+    even_component = miller_rabin_candidate - 1
 
-  while even_component % 2 == 0:
-      even_component >>= 1
-      max_division_by_two += 1
-  assert 2**max_division_by_two * even_component == miller_rabin_candidate - 1
+    while even_component % 2 == 0:
+        even_component >>= 1
+        max_division_by_two += 1
+    assert 2**max_division_by_two * even_component == miller_rabin_candidate - 1
 
-  def trial_composite(round_tester: int) -> bool:
-      if pow(round_tester, even_component, miller_rabin_candidate) == 1:
-          return False
+    def trial_composite(round_tester: int) -> bool:
+        if pow(round_tester, even_component, miller_rabin_candidate) == 1:
+            return False
 
-      return all(
-          pow(round_tester, 2**i * even_component, miller_rabin_candidate)
-          != miller_rabin_candidate - 1
-          for i in range(max_division_by_two)
-      )
+        return all(
+            pow(round_tester, 2**i * even_component, miller_rabin_candidate)
+            != miller_rabin_candidate - 1
+            for i in range(max_division_by_two)
+        )
 
-  for _ in range(iterations):
-      round_tester = random.randrange(2, miller_rabin_candidate)
-      if trial_composite(round_tester):
-          return False
-  return True
+    for _ in range(iterations):
+        round_tester = random.randrange(2, miller_rabin_candidate)
+        if trial_composite(round_tester):
+            return False
+    return True
 
 
 def n_bit_random(n: int) -> int:
-  return random.randrange(2 ** (n - 1) + 1, 2**n - 1)
+    return random.randrange(2 ** (n - 1) + 1, 2**n - 1)
 
 
 def get_low_level_prime(bits: int) -> int:
-  """Generate a prime candidate divisible
-  by first primes"""
-  while True:
-      # Obtain a random number
-      pc = n_bit_random(bits)
-      # Test divisibility by pre-generated primes
-      for divisor in FIRST_PRIMES:
-          if pc % divisor == 0 and divisor**2 <= pc:
-              break
-      else:
-          return pc
+    """Generate a prime candidate divisible
+    by first primes"""
+    while True:
+        # Obtain a random number
+        pc = n_bit_random(bits)
+        # Test divisibility by pre-generated primes
+        for divisor in FIRST_PRIMES:
+            if pc % divisor == 0 and divisor**2 <= pc:
+                break
+        else:
+            return pc
 
 
 def get_prime(bits: int, rounds: int = 10):
-  while True:
-    x = get_low_level_prime(bits)
-    if miller_rabin_passed(x, rounds):
-      return x
+    """Generate a strong pseudoprime with given bit length"""
+    while True:
+        x = get_low_level_prime(bits)
+        if miller_rabin_passed(x, rounds):
+            return x

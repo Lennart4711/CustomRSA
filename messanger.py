@@ -41,14 +41,18 @@ def decrypt_msg(msg: int, dec_key: tuple) -> str:
     return "".join(chars)
 
 
+def pprint(msg, length: int=5) -> str:
+    return f"{str(msg)[:length]}...{str(msg)[-length:]} ({len(str(msg))})"
+
 if __name__ == "__main__":
     print("Generating keypair...")
     enc_key, dec_key = gen_keypair(2048)
 
-    cleartext = "hello world"
-    print("Cleartext: ", cleartext)
+    cleartext = ":"*205
+    print(f"Cleartext: {pprint(cleartext)}")
 
-    ciphertext = encrypt_msg("cleartext".lower(), enc_key)
-    print(f"Ciphertext: {ciphertext}")
+    ciphertext = encrypt_msg(cleartext.lower(), enc_key)
+    print(f"Ciphertext: {pprint(ciphertext)} {ciphertext.bit_length()}")
 
     f = decrypt_msg(ciphertext, dec_key)
+    print(f"Encrypted: {pprint(f)}", )

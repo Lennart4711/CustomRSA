@@ -16,7 +16,7 @@ def mod_inverse(a: int, m: int) -> int:
     return pow(a, -1, m)
 
 
-def gen_keypair(key_length: int = 1024):
+def gen_keypair(key_length: int = 1024) -> tuple:
     """Generate a keypair with given key length"""
     # 1. Generate 2 random prime numbers, n bit length
     p = get_prime(key_length // 2)
@@ -28,10 +28,10 @@ def gen_keypair(key_length: int = 1024):
     # 3. Amount of coprimes with n
     phi_n = (p - 1) * (q - 1)
 
-    # 4. e: {1<e<phi_n
+    # 4. e: {1<e<phi_n-1
     #       coprime with n,phi_n
     e = 65537
-    # 5. d: de(mod phi_n) = 1
+    # 5. d: (e**-1) mod phi_n
     d = mod_inverse(e, phi_n)
 
     # 6. Put together the keys
