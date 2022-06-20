@@ -13,47 +13,28 @@ FIRST_PRIMES = [
 ]
 
 
-def is_prime_deterministic(n: int) -> bool:
-    """Determinstic test if n is prime"""
-    if n == 2 or n == 3:
-        return True
-    if n < 2 or n % 2 == 0:
-        return False
-    if n < 9:
-        return True
-    if n % 3 == 0:
-        return False
-    r = int(n**0.5)
-    for f in range(5, r + 1, 6):
-        if n % f == 0:
-            return False
-        if n % (f + 2) == 0:
-            return False
-    return True
-
-
-def miller_rabin_passed(miller_rabin_candidate: int, iterations: int = 10) -> bool:
-    """Probabilistic test if n is prime, error rate: 4**(-iterations)"""
+def miller_rabin_passed(n: int, iterations: int = 10) -> bool:
+    """Probabilistic test if n is prime, error rate: (1/4)**iterations"""
     max_division_by_two = 0
-    even_component = miller_rabin_candidate - 1
+    even_component = n - 1
 
     while even_component % 2 == 0:
-        even_component >>= 1
+        even_component //= 2
         max_division_by_two += 1
-    assert 2**max_division_by_two * even_component == miller_rabin_candidate - 1
+    assert 2**max_division_by_two * even_component == n - 1
 
     def trial_composite(round_tester: int) -> bool:
-        if pow(round_tester, even_component, miller_rabin_candidate) == 1:
+        if pow(round_tester, even_component, n) == 1:
             return False
 
         return all(
-            pow(round_tester, 2**i * even_component, miller_rabin_candidate)
-            != miller_rabin_candidate - 1
+            pow(round_tester, 2**i * even_component, n)
+            != n - 1
             for i in range(max_division_by_two)
         )
 
     for _ in range(iterations):
-        round_tester = random.randrange(2, miller_rabin_candidate)
+        round_tester = random.randrange(2, n)
         if trial_composite(round_tester):
             return False
     return True
@@ -64,16 +45,19 @@ def n_bit_random(n: int) -> int:
 
 
 def get_low_level_prime(bits: int) -> int:
-    """Generate a prime candidate divisible
+    """Generate a prime !candidate! divisible
     by first primes"""
     while True:
         # Obtain a random number
         pc = n_bit_random(bits)
         # Test divisibility by pre-generated primes
         for divisor in FIRST_PRIMES:
+            # Number is divisible by another -> not prime
             if pc % divisor == 0 and divisor**2 <= pc:
                 break
         else:
+            # Not divisible by pre-generated primes
+            # -> Low Level prime
             return pc
 
 
