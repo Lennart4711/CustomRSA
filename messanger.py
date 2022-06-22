@@ -1,58 +1,52 @@
 from rsa import encrypt, decrypt, gen_keypair
 
-ALPHABET = [
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 
-    'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 
-    's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-    ' ', '.', '!', '?', ',', ':'
-]
+
+def str_to_ascii(string: str) -> int:
+    """Convert a string to a list of ASCII numbers and fill with leading zeros"""
+    x = [str(ord(c)).zfill(3) for c in string]
+    # Concatenate a list of ASCII numbers to one string
+    return int("".join(x))
 
 
-def chr_to_num(c: str) -> int:
-    """Encodes a char using custom encoding"""
-    return 128 + ALPHABET.index(c)
-
-
-def num_to_chr(num: int) -> str:
-    """Decodes an integer to a chr using custom encoding"""
-    return ALPHABET[num - 128]
-
-
-def encrypt_msg(msg: str, enc_key: tuple) -> int:
-    """This function encodes and encrypts the message provided."""
-    # List of every char in msg as number
-    chars = [str(chr_to_num(c)) for c in msg]
-    # Join to one long int
-    x = int("".join(chars))
-    # Decrypt the msg
-    return encrypt(x, enc_key)
-
-
-def decrypt_msg(msg: int, dec_key: tuple) -> str:
-    """This function decrypts and decodes a string back into plain text."""
-    # Decrypt the decoded msg
-    decoded = str(decrypt(msg, dec_key))
+def ascii_to_str(ascii: int) -> str:
+    x = str(ascii)
+    # Fill x with leading zeros that len x % 3 == 0
+    x = x.zfill(len(x) + (3 - len(x) % 3) % 3)
     # Split at every third decimal places for 8 bit
-    char_nums = [decoded[i : i + 3] for i in range(0, len(decoded), 3)]
-    # Get original char from number representation
-    chars = [num_to_chr(int(x)) for x in char_nums]
+    char_nums = [x[i : i + 3] for i in range(0, len(x), 3)]
+    # Convert to int and get original char
+    chars = [chr(int(x)) for x in char_nums]
     # List of chars to string
     return "".join(chars)
+
+def encrypt_ascii(msg: str, enc_key: tuple) -> int:
+    """This function encodes and encrypts the message provided."""
+    # List of every char in msg as number
+    chars = str_to_ascii(msg)
+    return encrypt(chars, enc_key)
+
+def decrypt_ascii(ciphertext: int, enc_key: tuple) -> str:
+    """This function decrypts and decodes a string back into plain text."""
+    # Decrypt ciphertext
+    decrypted = decrypt(ciphertext, enc_key)
+    # Ascii to string
+    return ascii_to_str(decrypted)
+
 
 
 def pprint(msg, length: int=5) -> str:
     return f"{str(msg)[:length]}...{str(msg)[-length:]} ({len(str(msg))})"
 
 if __name__ == "__main__":
+    # enc_key, dec_key =((65537, 17053290525203361447482418118742189033655190563825160856865236888857906313202175904860008550309607602310234001290504953128464712578608376283364684725411347161935680134803218792924673982811516083792962502288327239767882056981391812980091086337811917835843849213766715542355822255841214352856547229288031018763742376911244107747601961768750636662147325041530052936999607259938580677080726010944640727018508509653918412040847107658507704827730076362047690081486896202749733182222841210127284077751905998000694304195805554208752438422816588917915076405153022884098947833989998465163292951011896630664686721393182024948499), (2491237064380380281340260785034983563608569120619834445330542715930323253163825504877088085519083619703651072346236391980895084581650008308847421938158417958227752286656484378648104562482833437390082289346604894846234994179468776682963700819357176882682591701979073418107552104573352247039818471599304346760479780849422373887846283483847589186485967388127939587632249061743105016721055538144909910196490341611651704540231482965892799042054064201898490721482180565840641176813803399340625669824697926153872664565407081616922015272036628360319371434836460720924804611792795316080554914806740613383954896499173282829793, 17053290525203361447482418118742189033655190563825160856865236888857906313202175904860008550309607602310234001290504953128464712578608376283364684725411347161935680134803218792924673982811516083792962502288327239767882056981391812980091086337811917835843849213766715542355822255841214352856547229288031018763742376911244107747601961768750636662147325041530052936999607259938580677080726010944640727018508509653918412040847107658507704827730076362047690081486896202749733182222841210127284077751905998000694304195805554208752438422816588917915076405153022884098947833989998465163292951011896630664686721393182024948499))
     print("Generating keypair...")
     enc_key, dec_key = gen_keypair(2048)
 
-    cleartext = ":"*205
+    cleartext = "Lorem ipsum Dolor sit amet consetetur sadipscing"
     print(f"Cleartext: {pprint(cleartext)}")
 
-    ciphertext = encrypt_msg(cleartext.lower(), enc_key)
+    ciphertext = encrypt_ascii(cleartext, enc_key)
     print(f"Ciphertext: {pprint(ciphertext)} {ciphertext.bit_length()}")
 
-    f = decrypt_msg(ciphertext, dec_key)
-    print(f"Encrypted: {pprint(f)}", )
+    f = decrypt_ascii(ciphertext, dec_key)
+    print(f"Decrypted: {pprint(f)}")
